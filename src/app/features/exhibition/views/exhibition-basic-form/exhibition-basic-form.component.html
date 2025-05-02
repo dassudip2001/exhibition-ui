@@ -1,0 +1,396 @@
+<!-- exhibition-form.component.html -->
+<div class="exhibition-form-container">
+  <h1>Create Exhibition</h1>
+  
+  <form [formGroup]="exhibitionForm" (ngSubmit)="onSubmit()">
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button type="button" [class.active]="activeTab === 'basic'" (click)="setActiveTab('basic')">
+        Basic Information
+      </button>
+      <button type="button" [class.active]="activeTab === 'sections'" (click)="setActiveTab('sections')">
+        Exhibition Sections
+      </button>
+      <button type="button" [class.active]="activeTab === 'preview'" (click)="setActiveTab('preview')">
+        Preview
+      </button>
+    </div>
+    
+    <!-- Basic Information Tab -->
+    <div class="tab-content" [hidden]="activeTab !== 'basic'">
+      <div class="form-section">
+        <h2>Basic Information</h2>
+        
+        <div class="form-group">
+          <label for="title">Exhibition Title*</label>
+          <input 
+            id="title" 
+            type="text" 
+            formControlName="title" 
+            placeholder="Enter exhibition title"
+            (blur)="generateSlug()"
+          >
+          @if(exhibitionForm.get('title')?.invalid && exhibitionForm.get('title')?.touched) {
+            <div class="error-message">
+              Title is required
+            </div>
+          }
+          
+        </div>
+        
+        <div class="form-group">
+          <label for="slug">URL Slug*</label>
+          <div class="slug-field">
+            <input 
+              id="slug" 
+              type="text" 
+              formControlName="slug" 
+              placeholder="exhibition-slug"
+            >
+            <button type="button" (click)="generateSlug()">Generate</button>
+          </div>
+          @if(exhibitionForm.get('slug')?.invalid && exhibitionForm.get('slug')?.touched) {
+            <div class="error-message">
+              Slug is required and must contain only lowercase letters, numbers, and hyphens
+            </div>
+          }
+          
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startDate">Start Date*</label>
+            <input 
+              id="startDate" 
+              type="date" 
+              formControlName="startDate"
+            >
+            @if(exhibitionForm.get('startDate')?.invalid && exhibitionForm.get('startDate')?.touched) {
+              <div class="error-message">
+                Start date is required
+              </div>
+            }
+            
+          </div>
+          
+          <div class="form-group">
+            <label for="endDate">End Date*</label>
+            <input 
+              id="endDate" 
+              type="date" 
+              formControlName="endDate"
+            >
+            @if(exhibitionForm.get('endDate')?.invalid && exhibitionForm.get('endDate')?.touched) {
+              <div class="error-message">
+                End date is required
+              </div>
+            }
+            
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="status">Status*</label>
+          <select id="status" formControlName="status">
+            @for(status of statusOptions; track status) {
+              <option [value]="status">
+                {{ status | titlecase }}
+              </option>
+            }          
+        </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Description*</label>
+          <textarea 
+            id="description" 
+            formControlName="description" 
+            rows="4" 
+            placeholder="Enter exhibition description"
+          ></textarea>
+          @if(exhibitionForm.get('description')?.invalid && exhibitionForm.get('description')?.touched) {
+            <div class="error-message">
+              Description is required
+            </div>
+          }
+          
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="bannerImage">Banner Image*</label>
+            <div class="file-upload">
+              <input 
+                type="file" 
+                id="bannerImage" 
+                (change)="onBannerImageSelected($event)" 
+                accept="image/*"
+              >
+              <div class="file-preview" *ngIf="previewImage">
+                <img [src]="previewImage" alt="Banner Preview">
+              </div>
+            </div>
+            @if(exhibitionForm.get('bannerImage')?.invalid && exhibitionForm.get('bannerImage')?.touched) {
+              <div class="error-message">
+                Banner image is required
+              </div>
+            }
+            
+          </div>
+          
+          <div class="form-group">
+            <label for="thumbnailImage">Thumbnail Image*</label>
+            <div class="file-upload">
+              <input 
+                type="file" 
+                id="thumbnailImage" 
+                (change)="onThumbnailImageSelected($event)" 
+                accept="image/*"
+              >
+              <div class="file-preview" *ngIf="previewThumbnail">
+                <img [src]="previewThumbnail" alt="Thumbnail Preview">
+              </div>
+            </div>
+            @if(exhibitionForm.get('thumbnailImage')?.invalid && exhibitionForm.get('thumbnailImage')?.touched) {
+              <div class="error-message">
+                Thumbnail image is required
+              </div>
+            }
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sections Tab -->
+    <div class="tab-content" [hidden]="activeTab !== 'sections'">
+      <div class="form-section">
+        <h2>Exhibition Sections</h2>
+        <p class="section-help">Drag and drop sections to reorder. Each section will be displayed in the order shown here.</p>
+        
+        <div class="sections-container">
+          <div 
+            cdkDropList 
+            (cdkDropListDropped)="drop($event)"
+            class="sections-list"
+          >
+            <div 
+              *ngFor="let section of sections.controls; let i = index" 
+              [formGroup]="getSectionFormGroup(i)"
+              cdkDrag
+              class="section-item"
+            >
+              <div class="drag-handle" cdkDragHandle>
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M18 11h-12c-0.55 0-1 0.45-1 1s0.45 1 1 1h12c0.55 0 1-0.45 1-1s-0.45-1-1-1zM18 7h-12c-0.55 0-1 0.45-1 1s0.45 1 1 1h12c0.55 0 1-0.45 1-1s-0.45-1-1-1zM18 15h-12c-0.55 0-1 0.45-1 1s0.45 1 1 1h12c0.55 0 1-0.45 1-1s-0.45-1-1-1z"></path>
+                </svg>
+              </div>
+              
+              <div class="section-header">
+                <div class="section-number">{{ i + 1 }}</div>
+                <div class="section-title">{{ getSectionFormGroup(i).get('title')?.value || 'Untitled Section' }}</div>
+                <div class="section-type-badge">{{ getSectionFormGroup(i).get('type')?.value }}</div>
+                
+                <button type="button" class="btn-delete" (click)="removeSection(i)">
+                  <svg width="14" height="14" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
+                  </svg>
+                </button>
+              </div>
+              
+              <div class="section-content">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Section Type</label>
+                    <select formControlName="type">
+                      <option *ngFor="let type of sectionTypeOptions" [value]="type">
+                        {{ type | titlecase }}
+                      </option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Section Title</label>
+                    <input type="text" formControlName="title" placeholder="Section title">
+                    <div *ngIf="getSectionFormGroup(i).get('title')?.invalid && getSectionFormGroup(i).get('title')?.touched" class="error-message">
+                      Title is required
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label>Content</label>
+                  <ng-container [ngSwitch]="getSectionFormGroup(i).get('type')?.value">
+                    <textarea 
+                      *ngSwitchCase="'text'" 
+                      formControlName="content" 
+                      rows="4" 
+                      placeholder="Enter text content"
+                    ></textarea>
+                    
+                    <textarea 
+                      *ngSwitchCase="'html'" 
+                      formControlName="content" 
+                      rows="6" 
+                      placeholder="Enter HTML content"
+                    ></textarea>
+                    
+                    <div *ngSwitchCase="'image'" class="file-upload">
+                      <input type="file" accept="image/*">
+                      <input type="hidden" formControlName="content">
+                    </div>
+                    
+                    <div *ngSwitchCase="'gallery'" class="file-upload">
+                      <input type="file" accept="image/*" multiple>
+                      <input type="hidden" formControlName="content">
+                    </div>
+                    
+                    <div *ngSwitchCase="'slider'" class="file-upload">
+                      <input type="file" accept="image/*" multiple>
+                      <input type="hidden" formControlName="content">
+                    </div>
+                    
+                    <div *ngSwitchCase="'carousel'" class="file-upload">
+                      <input type="file" accept="image/*" multiple>
+                      <input type="hidden" formControlName="content">
+                    </div>
+                    
+                    <input 
+                      *ngSwitchCase="'video'" 
+                      type="url" 
+                      formControlName="content" 
+                      placeholder="Enter video URL"
+                    >
+                    
+                    <input 
+                      *ngSwitchCase="'embedded'" 
+                      type="text" 
+                      formControlName="content" 
+                      placeholder="Enter embed code"
+                    >
+                    
+                    <input 
+                      *ngSwitchCase="'iframe'" 
+                      type="url" 
+                      formControlName="content" 
+                      placeholder="Enter iframe URL"
+                    >
+                    
+                    <input 
+                      *ngSwitchDefault 
+                      type="text" 
+                      formControlName="content" 
+                      placeholder="Enter content"
+                    >
+                  </ng-container>
+                  
+                  <div *ngIf="getSectionFormGroup(i).get('content')?.invalid && getSectionFormGroup(i).get('content')?.touched" class="error-message">
+                    Content is required
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <button type="button" class="btn-add" (click)="addSection()">
+            <svg width="14" height="14" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
+            </svg>
+            Add Section
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Preview Tab -->
+    <div class="tab-content" [hidden]="activeTab !== 'preview'">
+      <div class="form-section">
+        <h2>Exhibition Preview</h2>
+        
+        <div class="preview-container">
+          <div class="preview-header">
+            <h1>{{ exhibitionForm.get('title')?.value || 'Exhibition Title' }}</h1>
+            <div class="preview-dates">
+              {{ exhibitionForm.get('startDate')?.value | date }} - {{ exhibitionForm.get('endDate')?.value | date }}
+            </div>
+            
+            <div class="preview-status" [ngClass]="exhibitionForm.get('status')?.value">
+              {{ exhibitionForm.get('status')?.value | titlecase }}
+            </div>
+          </div>
+          
+          <div class="preview-banner">
+            <img [src]="previewImage || 'assets/placeholder-banner.jpg'" alt="Exhibition Banner">
+          </div>
+          
+          <div class="preview-description">
+            {{ exhibitionForm.get('description')?.value || 'Exhibition description will appear here.' }}
+          </div>
+          
+          <div class="preview-sections">
+            <div *ngFor="let section of sections.controls; let i = index" class="preview-section">
+              <h3>{{ getSectionFormGroup(i).get('title')?.value || 'Section Title' }}</h3>
+              
+              <div class="preview-section-content" [ngSwitch]="getSectionFormGroup(i).get('type')?.value">
+                <div *ngSwitchCase="'text'" class="preview-text">
+                  {{ getSectionFormGroup(i).get('content')?.value || 'Text content will appear here.' }}
+                </div>
+                
+                <div *ngSwitchCase="'html'" class="preview-html">
+                  <div [innerHTML]="getSectionFormGroup(i).get('content')?.value || '<p>HTML content will appear here.</p>'"></div>
+                </div>
+                
+                <div *ngSwitchCase="'image'" class="preview-image">
+                  <img src="assets/placeholder-image.jpg" alt="Section Image">
+                </div>
+                
+                <div *ngSwitchCase="'gallery'" class="preview-gallery">
+                  <div class="gallery-placeholder">Gallery images will appear here</div>
+                </div>
+                
+                <div *ngSwitchCase="'slider'" class="preview-slider">
+                  <div class="slider-placeholder">Slider images will appear here</div>
+                </div>
+                
+                <div *ngSwitchCase="'carousel'" class="preview-carousel">
+                  <div class="carousel-placeholder">Carousel items will appear here</div>
+                </div>
+                
+                <div *ngSwitchCase="'video'" class="preview-video">
+                  <div class="video-placeholder">Video from {{ getSectionFormGroup(i).get('content')?.value || 'URL' }} will appear here</div>
+                </div>
+                
+                <div *ngSwitchCase="'embedded'" class="preview-embedded">
+                  <div class="embedded-placeholder">Embedded content will appear here</div>
+                </div>
+                
+                <div *ngSwitchCase="'iframe'" class="preview-iframe">
+                  <div class="iframe-placeholder">iFrame from {{ getSectionFormGroup(i).get('content')?.value || 'URL' }} will appear here</div>
+                </div>
+                
+                <div *ngSwitchDefault class="preview-default">
+                  {{ getSectionFormGroup(i).get('content')?.value || 'Content will appear here' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" [disabled]="activeTab === 'basic'" (click)="setActiveTab(activeTab === 'sections' ? 'basic' : (activeTab === 'preview' ? 'sections' : 'basic'))">
+        Previous
+      </button>
+      
+      <button type="button" class="btn-secondary" [hidden]="activeTab === 'preview'" (click)="setActiveTab(activeTab === 'basic' ? 'sections' : 'preview')">
+        Next
+      </button>
+      
+      <button type="submit" class="btn-primary" [disabled]="exhibitionForm.invalid">
+        Save Exhibition
+      </button>
+    </div>
+  </form>
+</div>
