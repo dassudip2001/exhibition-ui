@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, inject } from '@angular/core';
+import { ExhibitionService } from '../exhibition/services/exhibition.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -6,6 +7,16 @@ import { Component } from '@angular/core';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent {
+export class DashboardComponent implements AfterViewInit {
+  readonly #exhibitionService=inject(ExhibitionService);
+  ngAfterViewInit(): void {
+    this.#getExhibitions();
+  }
+
+  #getExhibitions(): void {
+    this.#exhibitionService.get().subscribe((res) => {
+      console.log(res);
+    });
+  }
 
 }

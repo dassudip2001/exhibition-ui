@@ -622,13 +622,6 @@ export class ExhibitionBasicFormComponent implements OnInit {
     this.updateSectionOrder();
   }
 
-  // Update order values after reordering
-  private updateSectionOrder(): void {
-    this.sections.controls.forEach((control, index) => {
-      control.get('order')?.setValue(index);
-    });
-  }
-
   // Generate slug from title
   generateSlug(): void {
     const title = this.exhibitionForm.get('title')?.value;
@@ -710,6 +703,10 @@ export class ExhibitionBasicFormComponent implements OnInit {
       this.markFormGroupTouched(this.exhibitionForm);
     }
   }
+  // Helper method to change active tab
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
+  }
 
   // Helper to mark all controls as touched
   private markFormGroupTouched(formGroup: FormGroup): void {
@@ -721,9 +718,10 @@ export class ExhibitionBasicFormComponent implements OnInit {
       }
     });
   }
-
-  // Helper method to change active tab
-  setActiveTab(tab: string): void {
-    this.activeTab = tab;
+  // Update order values after reordering
+  private updateSectionOrder(): void {
+    this.sections.controls.forEach((control, index) => {
+      control.get('order')?.setValue(index);
+    });
   }
 }

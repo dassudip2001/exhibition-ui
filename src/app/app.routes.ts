@@ -44,12 +44,12 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'exhibition-app/exhibition/create',
+    redirectTo: 'exhibition-app',
     pathMatch: 'full',
   },
   {
     path: '**',
-    redirectTo: 'exhibition-app/exhibition/create',
+    redirectTo: 'exhibition-app',
     pathMatch: 'full',
   },
 ];
